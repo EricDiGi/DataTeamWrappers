@@ -1,0 +1,14 @@
+[
+    {
+        "name":"airports_us",
+        "id":"802c21ff-3dec-4a3f-ac5b-62aae19b4261",
+        "columns":["ident","latitude_deg","longitude_deg","type"]
+    },
+    {
+        "name": "gale_branches",
+        "description": "Description of Gale Branches",
+        "id": "c9157ec2-1747-4215-85a9-fb503bbdeef5",
+        "columns": "*",
+        "limit": 50
+    }
+]
