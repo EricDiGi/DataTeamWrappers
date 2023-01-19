@@ -5,8 +5,8 @@
         "columns":["ident","latitude_deg","longitude_deg","type"]
     },
     {
-        "name": "gale_branches",
-        "description": "Description of Gale Branches",
+        "name": "company_branches",
+        "description": "Description of Company Branches",
         "id": "c9157ec2-1747-4215-85a9-fb503bbdeef5",
         "columns": "*",
         "limit": 50
