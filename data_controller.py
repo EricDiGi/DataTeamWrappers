@@ -6,6 +6,7 @@ in a method that can be quickly accessed and queried.
 Made to replace pandas for small datasets, or API testing.
 """
 from typing import Iterable
+import re
 
 def lambda_debug(lambda_,param,debug=False):
     """Prints a debug message if debug is True."""
@@ -22,23 +23,14 @@ class Collection:
         self.name = name if name is not None else ""
     def __getitem__(self, val):
         if isinstance(val, Iterable):
-            return Object(
-                dict(
-                    list(
-                        map(
-                            lambda v: (
-                                v,
-                                list(
-                                    map(
-                                        lambda d: d.get(v),self.data
-                                    )
-                                )
-                            ), val
-                        )
-                    )
-                )
+            return list(
+                map(lambda d: d[val],self.data)
             )
-        return Collection(self.data[val])
+        if isinstance(val, int):
+            return self.data[val]
+        if isinstance(val,slice):
+            return Collection(self.data[val])
+        raise TypeError("Cannot index with type {}".format(type(val)))
     def __repr__(self):
         return (self.name + (" = ")*(len(self.name)>0))+self.data.__str__()
     def __name__(self, name):
@@ -122,6 +114,10 @@ class ConditionalsPRIVATE:
     def matches(self,parm, debug=False):
         """Similar to 'in' operator"""
         return lambda o: self.debug(o.get(self.key), parm, lambda x,y: x in y, debug=debug)
+    def regex_match(self,parm,debug=False):
+        if not isinstance(parm, tuple):
+            raise TypeError("ragex_match was expecting a tuple not {}".format(type(parm)))
+        return lambda o: self.debug(o.get(self.key), parm, lambda x,y: re.search(y[0],x,y[1]), debug=debug)
 
 def field(name):
     """Simplifies Condition calls"""
@@ -133,6 +129,7 @@ def condition(key, func, value):
         ">": (lambda k,v: ConditionalsPRIVATE(k)>v),
         "<": (lambda k,v: ConditionalsPRIVATE(k)<v),
         "==": (lambda k,v: ConditionalsPRIVATE(k)==v),
-        "matches": (lambda k,v: ConditionalsPRIVATE(k).matches(v))
+        "matches": (lambda k,v: ConditionalsPRIVATE(k).matches(v)),
+        "regex_match": (lambda k,v: ConditionalsPRIVATE(k).regex_match(v)),
     }
     return func_map[func](key,value)
