@@ -31,7 +31,12 @@ class DomoMeido:
     connected = False
     template_loaded = False
     def __init__(self, env_file=None, utility_file=None, table_def=None):
-
+        """
+        Args:
+            env_file (str, required): Path to the environment file. Defaults to None.
+            utility_file (str, optional): Path to the utility file. Defaults to None.
+            table_def (list, optional): A list of dictionaries. Defaults to None.
+        """
         self.has_raw_json = ((table_def is not None) and isinstance(table_def,(dict,list)))
         if self.has_raw_json:
             self.raw_json = table_def if isinstance(table_def, list) else [table_def]
@@ -82,15 +87,18 @@ class DomoMeido:
                 ("loaded" if self.template_loaded else "not loaded")
             )
         )
-    def query(self,table):
+    def _query_(self,table):
         """Specify the query for Domo to implement using the specifications found in the template"""
-        cols=','.join(table.columns)
-        limit=table.limit
-        lim = f"limit {limit}" if table.limit is not None else ""
-        return f"select {cols} from table {lim}"
+        if 'query' not in table.keys():
+            cols=','.join(table.columns)
+            limit=table.limit
+            lim = f"limit {limit}" if table.limit is not None else ""
+            return f"select {cols} from table {lim}"
+        query_string = table.query.replace(table.name,'table')
+        return query_string
     def domo_query(self,table):
         """Run the query and return a dataframe."""
-        return self.domo.ds_query(table.id, self.query(table))
+        return self.domo.ds_query(table.id, self._query_(table))
     def load(self):
         """Load all tables specified in the template into Table objects"""
         dataset = DomoSet()
@@ -114,8 +122,11 @@ class DomoTable():
         else:
             _raise(Exception("Table does not have a name"))
         self.desc = table_dict["description"] if table_dict.get("description") is not None else None
-        self.columns = table_dict["columns"] if table_dict.get("columns") is not None else ["*"]
-        self.limit = table_dict["limit"] if table_dict.get("limit") is not None else None
+        if table_dict.get('query') is None:
+            self.columns = table_dict["columns"] if table_dict.get("columns") is not None else ["*"]
+            self.limit = table_dict["limit"] if table_dict.get("limit") is not None else None
+        else:
+            self.query = table_dict["query"]
         self.dataframe = None
     def close(self):
         """Deconstructor"""
@@ -126,6 +137,8 @@ class DomoTable():
     def __repr__(self):
         display(self.dataframe)
         return ""
+    def keys(self):
+        return self.__dict__.keys()
 # %%
 class DomoSet():
     """An abstract class to simplify dynamic attribute naming"""
