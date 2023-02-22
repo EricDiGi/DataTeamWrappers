@@ -2,6 +2,14 @@ import os, sys
 import re
 import json as js
 import glob
+
+from .flags import SNAKE_CASE
+
+from .mode import *
+
+def __init__():
+    pass
+
 # ROUTERS
 _format_ = {
     "is_json": lambda path: re.match(r'^.*\.json$',path,re.IGNORECASE) and os.path.isfile(path),
@@ -13,7 +21,6 @@ _open_resolution_ = {
 }
 
 # FLAGS
-SNAKE_CASE = 1
 
 # FUNCTIONS
 def find(search="", ext=".env"):
@@ -108,3 +115,28 @@ def arbiter(path,default=True,flags=[]):
     for key in keys__:
         if _format_[key](path):
             return _open_resolution_[key](path,default,flags)
+
+def save(path,vars,mode):
+    """
+    A method to save a specified environment using a specified mode.
+    path: the path to save to
+    vars: a dictionary of the variables to save. Accepts dicts or lists of tuples.
+    mode: the mode to use for saving (envy.mode.*)
+
+    Returns: None
+    """
+    vars = dict(vars)
+    __modes__ = {
+        ENV: "\n".join(list(map(lambda a: "{}={}".format(a[0].upper(), a[1]), list(vars.items())))),
+        JSON: js.dumps(vars)
+    }
+    with open(path,'w') as f:
+        f.write(__modes__[mode])
+
+__all__ = [
+    "find",
+    "is_json",
+    "is_env",
+    "arbiter",
+    "save"
+]

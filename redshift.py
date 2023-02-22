@@ -1,4 +1,4 @@
-import envy
+import envy as envy
 import redshift_connector as red
 
 def __init__(host, port, user, password, database):
@@ -9,7 +9,7 @@ def __init__(host, port, user, password, database):
 def connect(path=None):
     global profile
     if path is not None:
-        profile = envy.arbiter(path, default=envy.is_json(path),flags=[envy.SNAKE_CASE])
+        profile = envy.arbiter(path, default=envy.is_json(path),flags=[envy.SNAKE_CASE]) # environment to dict
     profile['port'] = int(profile['port'])
     conn = red.connect(**profile)
     del profile

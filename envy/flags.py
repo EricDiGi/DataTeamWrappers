@@ -1,0 +1,1 @@
+SNAKE_CASE = 1
