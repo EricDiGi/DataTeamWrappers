@@ -71,11 +71,14 @@ def env(path, default=True,flags=[]):
     if os.path.isfile(path):
         with open(path,'r') as f:
             for line in f:
-                k,v = line.strip().split('=',1)
-                if default:
-                    os.environ[k] = v
-                else:
-                    out.update({snake_case(k) if SNAKE_CASE in flags else k:v})
+                try:
+                    k,v = line.strip().split('=',1)
+                    if default:
+                        os.environ[k] = v
+                    else:
+                        out.update({snake_case(k) if SNAKE_CASE in flags else k:v})
+                except Exception as e:
+                    continue
         return out
     else:
         raise FileNotFoundError(path)
@@ -90,7 +93,7 @@ def json(path, default=True,flags=[]):
     Returns: A dictionary of the negotiated solution if JSON resolution was reached, None otherwise.
     """
     if os.path.isfile(path):
-        jj = map(lambda k,v: (snake_case(k) if SNAKE_CASE in flags else k ,v), js.load(open(path,'r')).items())
+        jj = dict(map(lambda i: (snake_case(i[0]) if SNAKE_CASE in flags else i[0] ,i[1]), js.load(open(path,'r')).items()))
         if default:
             return jj
         for k,v in jj.items():
